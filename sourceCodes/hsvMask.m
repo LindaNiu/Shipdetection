@@ -1,4 +1,4 @@
-function [mask sateMask] = hsvMask(hueLow,hueHigh,smallestAcceptableArea)
+function [mask sateMask] = hsvMask(hueLow,hueHigh,smallestAcceptableArea,varargin)
 % HSVMASK MASKS the requried color object.
 % Varargin CONTAINS [satImage,terImage]. SatImage is a satellite image.
 % terImage is a terrain image.

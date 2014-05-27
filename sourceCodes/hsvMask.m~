@@ -1,4 +1,4 @@
-function [mask sateMask] = hsvMask(hueLow,hueHigh,smallestAcceptableArea)
+function [mask sateMask] = hsvMask(hueLow,hueHigh,smallestAcceptableArea,varaigin)
 % HSVMASK MASKS the requried color object.
 % Varargin CONTAINS [satImage,terImage]. SatImage is a satellite image.
 % terImage is a terrain image.
@@ -10,18 +10,9 @@ function [mask sateMask] = hsvMask(hueLow,hueHigh,smallestAcceptableArea)
 % set(gcf, 'units','normalized','outerposition',[0 0 1 1])
 %
 
+if length(varargin)==0
+    
 
-currentAxis = axis
-zoomLevel = getZoomLevel(currentAxis)
-
-lon = sum(currentAxis(1:2))/2
-lat = sum(currentAxis(3:4))/2
-
-% APIKEY IS testing now.
-satParams = struct('latitude',lat,'longitude',lon,'zoom',zoomLevel,'maptype','satellite','apikey','AIzaSyCg0-ikB-TFJbNLyNrMxeUkf8bMmlWjq_c');
-terParams = struct('latitude',lat,'longitude',lon,'zoom',zoomLevel,'maptype','roadmap','apikey','AIzaSyCg0-ikB-TFJbNLyNrMxeUkf8bMmlWjq_c');
-satImage = mapsapi(satParams,'tmp1.png');
-terImage = mapsapi(terParams,'tmp2.png');
 
 % Convert RGB image to HSV
 hsvImage = rgb2hsv(terImage);
