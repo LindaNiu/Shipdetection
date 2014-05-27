@@ -72,10 +72,10 @@ elseif (isempty(params.maptype))
 end
 
 % Set APIKEYs
-if ~isfield(params,'apikey')
-    keyStr = '';
+if (~isfield(params,'apikey'))
+    params.('apikey') = '';
 elseif(isempty(params.apikey))
-    keyStr = '';
+    params.apikey = '';
     
 end
 
