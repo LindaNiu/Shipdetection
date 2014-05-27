@@ -11,11 +11,11 @@ function [mask sateMask] = hsvMask(hueLow,hueHigh,smallestAcceptableArea)
 %
 
 
-curAxis = axis;
-zoomLevel = getZoomLevel(curAxis);
+curAxis = axis
+zoomLevel = getZoomLevel(curAxis)
 
-lon = sum(curAxis(1:2))/2;
-lat = sum(curAxis(3:4))/2;
+lon = sum(curAxis(1:2))/2
+lat = sum(curAxis(3:4))/2
 satParams = struct('latitude',lat,'longitude',lon,'zoom',zoomLevel,'maptype','satellite');
 terParams = struct('latitude',lat,'longitude',lon,'zoom',zoomLevel,'maptype','terrain');
 satImage = mapsapi(satParams,'tmp1.png');
