@@ -1,4 +1,4 @@
-function [mask sateMask] = hsvMask(hueLow,hueHigh,smallestAcceptableArea,varaigin)
+function [mask sateMask] = hsvMask(hueLow,hueHigh,smallestAcceptableArea,varargin)
 % HSVMASK MASKS the requried color object.
 % Varargin CONTAINS [satImage,terImage]. SatImage is a satellite image.
 % terImage is a terrain image.
@@ -10,9 +10,38 @@ function [mask sateMask] = hsvMask(hueLow,hueHigh,smallestAcceptableArea,varaigi
 % set(gcf, 'units','normalized','outerposition',[0 0 1 1])
 %
 
+isApiKeyFlag = 0;%'AIzaSyCg0-ikB-TFJbNLyNrMxeUkf8bMmlWjq_c'
 if length(varargin)==0
-    
+    currentAxis = axis
+    zoomlevel = getZoomLevel(currentAxis)
 
+    lon = sum(currentAxis(1:2))/2
+    lat = sum(currentAxis(3:4))/2
+
+    % APIKEY IS testing now.
+    satParams = struct('latitude',lat,'longitude',lon,'zoom',zoomlevel,'maptype','satellite');
+    terParams = struct('latitude',lat,'longitude',lon,'zoom',zoomlevel,'maptype','terrain');
+    
+else length(varargin)==1
+    satParams = varargin{1};
+    satParams.zoom=10;
+    satParams.maptype = 'satellite';
+    terParams = varargin{1};
+    terParams.zoom=10;
+    terParams.maptype = 'roadmap';
+end
+
+if isApiKeyFlag==0
+    satParams.apikey = '';
+    terParams.apikey = '';
+else
+    satParams.apikey = 'AIzaSyCg0-ikB-TFJbNLyNrMxeUkf8bMmlWjq_c';
+    terParams.apikey = 'AIzaSyCg0-ikB-TFJbNLyNrMxeUkf8bMmlWjq_c';
+end
+
+% Get images.
+satImage = mapsapi(satParams,'tmp1.png');
+terImage = mapsapi(terParams,'tmp2.png');
 
 % Convert RGB image to HSV
 hsvImage = rgb2hsv(terImage);
@@ -62,7 +91,58 @@ maskedImageB = satMask .* satImage(:,:,3);
 sateMask = cat(3, maskedImageR, maskedImageG, maskedImageB);
 figure;
 imshow(sateMask);
+
+% Set Axes 
+scale = 2;%satParams.scale;
+width = 640*scale;%params.size(2)*scale;
+height= 640*scale;%params.size(1)*scale;% TODO *scale;
+%lat   = satParams.latitude;
+%lon   = satParams.longitude;
+curLatLonAxis = getCurAxis(width,height,lat,lon,zoomlevel,scale)
+if curLatLonAxis(1)<-180
+    curLatLonAxis(1)=-180;
 end
+if curLatLonAxis(2)>180
+    curLatLonAxis(2)=180;
+end
+if curLatLonAxis(3)<-85
+    curLatLonAxis(3)=-85;
+end
+if curLatLonAxis(4)>85
+    curLatLonAxis(4)=85;
+end
+
+%Current Ratio
+%curAxis = axis
+%xratio = diff(curLatLonAxis(1:2))/diff(curAxis(1:2));
+%yratio = diff(curLatLonAxis(3:4))/diff(curAxis(3:4));
+%curGeo= [xratio yratio];
+
+% Scale data and display image object 
+figure;
+imagesc(sateMask);
+% Set axis labels
+xstep = diff(curLatLonAxis(1:2))/10;
+xticklabels = curLatLonAxis(1):xstep:curLatLonAxis(2);
+xticks = linspace(1, size(g, 2), numel(xticklabels));
+set(gca, 'XTick', xticks, 'XTickLabel', xticklabels);
+ystep = diff(curLatLonAxis(3:4))/10;
+yticklabels = curLatLonAxis(3):ystep:curLatLonAxis(4);
+yticks = linspace(1, size(g, 1), numel(yticklabels));
+set(gca, 'YTick', yticks, 'YTickLabel', flipud(yticklabels(:)));
+% Add grid over the image.
+hold on
+
+M = diff(curLatLonAxis(3:4));
+N = diff(curLatLonAxis(1:2));
+
+for k = 1:25:M
+    x = [1 N];
+    y = [k k];
+    plot(x,y,'Color','w','LineStyle','-');
+    plot(x,y,'Color','k','LineStyle',':');
+end 
+
 
 
 

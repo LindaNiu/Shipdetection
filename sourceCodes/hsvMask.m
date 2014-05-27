@@ -120,7 +120,7 @@ end
 
 % Scale data and display image object 
 figure;
-grid on
+%imshow(sateMask);
 imagesc(sateMask);
 % Set axis labels
 xstep = diff(curLatLonAxis(1:2))/10;
@@ -131,6 +131,21 @@ ystep = diff(curLatLonAxis(3:4))/10;
 yticklabels = curLatLonAxis(3):ystep:curLatLonAxis(4);
 yticks = linspace(1, size(g, 1), numel(yticklabels));
 set(gca, 'YTick', yticks, 'YTickLabel', flipud(yticklabels(:)));
+% Add grid over the image.
+hold on
+
+M = diff(curLatLonAxis(3:4));
+N = diff(curLatLonAxis(1:2));
+
+for k=curLatLonAxis(1):xstep:curLatLonAxis(2);
+    x = [curLatLonAxis(1) curLatLonAxis(2)];
+    y = [k k];
+    plot(x,y,'Color','w','LineStyle','-');
+    plot(x,y,'Color','k','LineStyle',':');
+end 
+
+hold off
+
 
 
 
