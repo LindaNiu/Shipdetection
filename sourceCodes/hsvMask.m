@@ -20,7 +20,7 @@ if length(varargin)==0
 
     % APIKEY IS testing now.
     satParams = struct('latitude',lat,'longitude',lon,'zoom',zoomlevel,'maptype','satellite');
-    terParams = struct('latitude',lat,'longitude',lon,'zoom',zoomlevel,'maptype','terrain');
+    terParams = struct('latitude',lat,'longitude',lon,'zoom',zoomlevel,'maptype','roadmap');
     
 else length(varargin)==1
     satParams = varargin{1};
@@ -134,16 +134,22 @@ set(gca, 'YTick', yticks, 'YTickLabel', flipud(yticklabels(:)));
 % Add grid over the image.
 hold on
 
-M = diff(curLatLonAxis(3:4));
-N = diff(curLatLonAxis(1:2));
+M = size(sateMask,1);
+N = size(sateMask,2);
 
-for k=curLatLonAxis(1):xstep:curLatLonAxis(2);
-    x = [curLatLonAxis(1) curLatLonAxis(2)];
+step = 128;
+for k = 1:step:M
+    x = [1 N]; 
     y = [k k];
     plot(x,y,'Color','w','LineStyle','-');
     plot(x,y,'Color','k','LineStyle',':');
-end 
-
+end
+for k = 1:step:N 
+    x = [k k]; 
+    y = [1 M];
+   plot(x,y,'Color','w','LineStyle','-');
+    plot(x,y,'Color','k','LineStyle',':');
+end
 hold off
 
 
