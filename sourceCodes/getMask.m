@@ -49,9 +49,9 @@ terImage = mapsapi(terParams,'tmp2.png');
 
 % Mask process
 if (zoomlevel <= 12)
-    mask = hsvMask(hueLow,hueHigh,terImage,smallestAcceptableArea);
-elseif zoomlevel >= 15
-    mask = grayMask(terImage);
+    gMsk = hsvMask(hueLow,hueHigh,terImage,smallestAcceptableArea);
+else zoomlevel >= 15
+    gMsk = grayMask(terImage);
 end
 
 % % Convert RGB image to HSV
@@ -84,10 +84,9 @@ end
 % % Smooth the border using a morphological closing operation, imclose().
 % %structuringElement = strel('disk', 4);
 % %mask = imclose(mask, structuringElement);
-
-g = mask;
+mask = gMsk;
 figure;
-imshow(g,[]);
+imshow(g,gMsk);
 % Maximize the figure window.
 % set(gcf, 'Position', get(0, 'ScreenSize'));
 
@@ -95,7 +94,7 @@ imshow(g,[]);
 % Fill in any holes in the regions, since they are most likely red also.
 % g = uint8(imfill(mask, 'holes'))
 
-satMask = mask;
+satMask = gMsk;
 maskedImageR = satMask .* satImage(:,:,1);
 maskedImageG = satMask .* satImage(:,:,2);
 maskedImageB = satMask .* satImage(:,:,3);
@@ -230,13 +229,6 @@ mask = rgb2gray(terImage);
 mask(mask<=170|mask>=179) = 0;
 mask(mask>170&mask<179) = 1;
 end
-
-
-
-
-
-
-	
 
 
 
