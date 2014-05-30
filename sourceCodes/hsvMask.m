@@ -1,4 +1,4 @@
-function [mask sateMask] = hsvMask(hueLow,hueHigh,smallestAcceptableArea,varargin)
+function [mask sateMask gridData] = hsvMask(hueLow,hueHigh,smallestAcceptableArea,varargin)
 % HSVMASK MASKS the requried color object.
 % Varargin CONTAINS [satImage,terImage]. SatImage is a satellite image.
 % terImage is a terrain image.
@@ -11,25 +11,29 @@ function [mask sateMask] = hsvMask(hueLow,hueHigh,smallestAcceptableArea,varargi
 %
 
 isApiKeyFlag = 0;%'AIzaSyCg0-ikB-TFJbNLyNrMxeUkf8bMmlWjq_c'
-if length(varargin)==0
-    currentAxis = axis
-    zoomlevel = getZoomLevel(currentAxis)
-
-    lon = sum(currentAxis(1:2))/2
-    lat = sum(currentAxis(3:4))/2
-
-    % APIKEY IS testing now.
-    satParams = struct('latitude',lat,'longitude',lon,'zoom',zoomlevel,'maptype','satellite');
-    terParams = struct('latitude',lat,'longitude',lon,'zoom',zoomlevel,'maptype','roadmap');
+if isempty(varargin) == 1
+    currentAxis = axis;
+    [lon lat zoomlevel] = setCenterPoint(currentAxis); % setCenterPoin is an inner function.
     
-else length(varargin)==1
-    satParams = varargin{1};
-    satParams.zoom=10;
-    satParams.maptype = 'satellite';
-    terParams = varargin{1};
-    terParams.zoom=10;
-    terParams.maptype = 'roadmap';
+elseif length(varargin) >= 1
+    for idx = 1:2:length(varargin)
+        switch lower(varargin{idx})
+            case 'gridcell'
+                gridcell = varargin{idx+1};
+                [lon lat zoomlevel] = setCenterPoint(gridcell);
+            case 'apikey'
+                isApiKeyFlag = varargin{idx+1};
+            otherwise
+                error(['Unrecognized variable: ' varargin{idx}])
+        end
+    end
+else 
+    error('Wrong inputs.');
 end
+
+% set satellite image and terrain image or roadmap image's data struct
+satParams = struct('latitude',lat,'longitude',lon,'zoom',zoomlevel,'maptype','satellite');
+terParams = struct('latitude',lat,'longitude',lon,'zoom',zoomlevel,'maptype','roadmap');
 
 if isApiKeyFlag==0
     satParams.apikey = '';
@@ -98,7 +102,7 @@ width = 640*scale;%params.size(2)*scale;
 height= 640*scale;%params.size(1)*scale;% TODO *scale;
 %lat   = satParams.latitude;
 %lon   = satParams.longitude;
-curLatLonAxis = getCurAxis(width,height,lat,lon,zoomlevel,scale)
+curLatLonAxis = getCurAxis(width,height,lat,lon,zoomlevel,scale);
 if curLatLonAxis(1)<-180
     curLatLonAxis(1)=-180;
 end
@@ -151,6 +155,34 @@ for k = 1:step:N
     plot(x,y,'Color','k','LineStyle',':');
 end
 hold off
+
+% TODO
+% To develop a grid data with 4 data and one zoomlevel
+m = length(xticklabels)-1;
+n = length(yticklabels)-1;
+gridData=zeros(m*n,4);
+for i = 1:m
+    line = (i-1)*10; % Line of gridData matrix.
+    for j = 1:n
+        gridData(line+j,:)=[xticklabels(i) xticklabels(i+1) yticklabels(j) yticklabels(j+1)];
+    end % j
+end % i
+end
+
+% SETCENTERPOINT RETURNS three outputs of longitude, latitude and zoomlevel
+% according to the specific range of gridcell or current axis.
+% 
+% RangeOfLocation can be two type of data. It can be gridcell data from the
+% grid data, or can be current axis.
+function [lon lat zoomlevel] = setCenterPoint(rangeOflocation)
+
+zoomlevel = getZoomLevel(rangeOflocation);
+lon = sum(rangeOflocation(1:2))/2;
+lat = sum(rangeOflocation(3:4))/2;
+
+end
+
+
 
 
 
