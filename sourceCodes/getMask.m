@@ -1,4 +1,4 @@
-function [mask sateMask gridData] = hsvMask(hueLow,hueHigh,smallestAcceptableArea,varargin)
+function [mask sateMask gridData] = getMask(hueLow,hueHigh,smallestAcceptableArea,varargin)
 % HSVMASK MASKS the requried color object.
 % Varargin CONTAINS [satImage,terImage]. SatImage is a satellite image.
 % terImage is a terrain image.
@@ -47,36 +47,43 @@ end
 satImage = mapsapi(satParams,'tmp1.png');
 terImage = mapsapi(terParams,'tmp2.png');
 
-% Convert RGB image to HSV
-hsvImage = rgb2hsv(terImage);
-% Extract out the H, S, and V images individually
-hImage = hsvImage(:,:,1);
-sImage = hsvImage(:,:,2);
-vImage = hsvImage(:,:,3);
+% Mask process
+if (zoomlevel <= 12)
+    mask = hsvMask(hueLow,hueHigh,terImage,smallestAcceptableArea);
+elseif zoomlevel >= 15
+    mask = grayMask(terImage);
+end
 
-hueThresholdLow = hueLow;
-hueThresholdHigh = hueHigh;
-saturationThresholdLow = graythresh(sImage);
-saturationThresholdHigh = 1.0;
-valueThresholdLow = graythresh(vImage);
-valueThresholdHigh = 1.0;
-
-% Now apply each color band's particular thresholds to the color band
-hueMask = (hImage >= hueThresholdLow) & (hImage <= hueThresholdHigh);
-saturationMask = (sImage >= saturationThresholdLow) & (sImage <= saturationThresholdHigh);
-valueMask = (vImage >= valueThresholdLow) & (vImage <= valueThresholdHigh);
-
-% Combine the masks to find where all 3 are "true."
-% Then we will have the mask of only the right parts of the image.
-mask = uint8(hueMask & saturationMask & valueMask);
-
-% Keep areas only if they're bigger than this.
-% Get rid of small objects.  Note: bwareaopen returns a logical.
-mask = uint8(bwareaopen(mask, smallestAcceptableArea));
-
-% Smooth the border using a morphological closing operation, imclose().
-%structuringElement = strel('disk', 4);
-%mask = imclose(mask, structuringElement);
+% % Convert RGB image to HSV
+% hsvImage = rgb2hsv(terImage);
+% % Extract out the H, S, and V images individually
+% hImage = hsvImage(:,:,1);
+% sImage = hsvImage(:,:,2);
+% vImage = hsvImage(:,:,3);
+% 
+% hueThresholdLow = hueLow;
+% hueThresholdHigh = hueHigh;
+% saturationThresholdLow = graythresh(sImage);
+% saturationThresholdHigh = 1.0;
+% valueThresholdLow = graythresh(vImage);
+% valueThresholdHigh = 1.0;
+% 
+% % Now apply each color band's particular thresholds to the color band
+% hueMask = (hImage >= hueThresholdLow) & (hImage <= hueThresholdHigh);
+% saturationMask = (sImage >= saturationThresholdLow) & (sImage <= saturationThresholdHigh);
+% valueMask = (vImage >= valueThresholdLow) & (vImage <= valueThresholdHigh);
+% 
+% % Combine the masks to find where all 3 are "true."
+% % Then we will have the mask of only the right parts of the image.
+% mask = uint8(hueMask & saturationMask & valueMask);
+% 
+% % Keep areas only if they're bigger than this.
+% % Get rid of small objects.  Note: bwareaopen returns a logical.
+% mask = uint8(bwareaopen(mask, smallestAcceptableArea));
+% 
+% % Smooth the border using a morphological closing operation, imclose().
+% %structuringElement = strel('disk', 4);
+% %mask = imclose(mask, structuringElement);
 
 g = mask;
 figure;
@@ -184,7 +191,45 @@ end
 
 % Mask functions
 
-function 
+function mask = hsvMask(hueLow,hueHigh,terImage,smallestAcceptableArea)
+% Convert RGB image to HSV
+hsvImage = rgb2hsv(terImage);
+% Extract out the H, S, and V images individually
+hImage = hsvImage(:,:,1);
+sImage = hsvImage(:,:,2);
+vImage = hsvImage(:,:,3);
+
+hueThresholdLow = hueLow;
+hueThresholdHigh = hueHigh;
+saturationThresholdLow = graythresh(sImage);
+saturationThresholdHigh = 1.0;
+valueThresholdLow = graythresh(vImage);
+valueThresholdHigh = 1.0;
+
+% Now apply each color band's particular thresholds to the color band
+hueMask = (hImage >= hueThresholdLow) & (hImage <= hueThresholdHigh);
+saturationMask = (sImage >= saturationThresholdLow) & (sImage <= saturationThresholdHigh);
+valueMask = (vImage >= valueThresholdLow) & (vImage <= valueThresholdHigh);
+
+% Combine the masks to find where all 3 are "true."
+% Then we will have the mask of only the right parts of the image.
+mask = uint8(hueMask & saturationMask & valueMask);
+
+% Keep areas only if they're bigger than this.
+% Get rid of small objects.  Note: bwareaopen returns a logical.
+mask = uint8(bwareaopen(mask, smallestAcceptableArea));
+
+% Smooth the border using a morphological closing operation, imclose().
+%structuringElement = strel('disk', 4);
+%mask = imclose(mask, structuringElement);
+end
+
+% 
+function mask = grayMask(terImage)
+mask = rgb2gray(terImage);
+mask(mask<=170|mask>=179) = 0;
+mask(mask>170&mask<179) = 1;
+end
 
 
 
