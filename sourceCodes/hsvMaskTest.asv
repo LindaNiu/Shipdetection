@@ -75,14 +75,7 @@ for k = 1:step:N
     plot(x,y,'Color','k','LineStyle',':');
 end
 
-% TODO
-% To develop a grid data with 4 data and one zoomlevel
-% gridData=zeros(length(xstep)*length(ystep),4);
-% for i = 1:length(xstep)-1
-%     for j = 1:length(ystep)-1
-%         gridData(i*j,:)=[ystep(j) ystep(j+1) xstep(i) xstep(i+1)];
-%     end % j
-% end % i
+
 end
 
 
