@@ -105,8 +105,13 @@ end
 %xratio = diff(curLatLonAxis(1:2))/diff(curAxis(1:2));
 %yratio = diff(curLatLonAxis(3:4))/diff(curAxis(3:4));
 %curGeo= [xratio yratio];
-    
-    
+
+% Satellite image zoomlevel is 20, check zoomlevel
+if (params.zoom>20)
+    params.zoom=20;
+end
+
+
 % CONSTRUCT QUERY URL
 preamble = 'http://maps.googleapis.com/maps/api/staticmap';
 location = ['?center=' num2str(params.latitude,10) ',' num2str(params.longitude,10)];

@@ -1,4 +1,4 @@
-function [mask sateMask gridData] = getMask(hueLow,hueHigh,smallestAcceptableArea,varargin)
+function [mask,sateMask,gridData] = getMask(hueLow,hueHigh,smallestAcceptableArea,varargin)
 % HSVMASK MASKS the requried color object.
 % Varargin CONTAINS [satImage,terImage]. SatImage is a satellite image.
 % terImage is a terrain image.
@@ -13,14 +13,14 @@ function [mask sateMask gridData] = getMask(hueLow,hueHigh,smallestAcceptableAre
 isApiKeyFlag = 0;%'AIzaSyCg0-ikB-TFJbNLyNrMxeUkf8bMmlWjq_c'
 if isempty(varargin) == 1
     currentAxis = axis;
-    [lon lat zoomlevel] = setCenterPoint(currentAxis); % setCenterPoin is an inner function.
+    [lon,lat,zoomlevel] = setCenterPoint(currentAxis); % setCenterPoin is an inner function.
     
 elseif length(varargin) >= 1
     for idx = 1:2:length(varargin)
         switch lower(varargin{idx})
             case 'gridcell'
                 gridcell = varargin{idx+1};
-                [lon lat zoomlevel] = setCenterPoint(gridcell);
+                [lon,lat,zoomlevel] = setCenterPoint(gridcell);
             case 'apikey'
                 isApiKeyFlag = varargin{idx+1};
             otherwise
@@ -50,43 +50,13 @@ terImage = mapsapi(terParams,'tmp2.png');
 % Mask process
 if (zoomlevel <= 12)
     gMsk = hsvMask(hueLow,hueHigh,terImage,smallestAcceptableArea);
-else zoomlevel >= 15
+elseif zoomlevel > 12
     gMsk = grayMask(terImage);
 end
 
-% % Convert RGB image to HSV
-% hsvImage = rgb2hsv(terImage);
-% % Extract out the H, S, and V images individually
-% hImage = hsvImage(:,:,1);
-% sImage = hsvImage(:,:,2);
-% vImage = hsvImage(:,:,3);
-% 
-% hueThresholdLow = hueLow;
-% hueThresholdHigh = hueHigh;
-% saturationThresholdLow = graythresh(sImage);
-% saturationThresholdHigh = 1.0;
-% valueThresholdLow = graythresh(vImage);
-% valueThresholdHigh = 1.0;
-% 
-% % Now apply each color band's particular thresholds to the color band
-% hueMask = (hImage >= hueThresholdLow) & (hImage <= hueThresholdHigh);
-% saturationMask = (sImage >= saturationThresholdLow) & (sImage <= saturationThresholdHigh);
-% valueMask = (vImage >= valueThresholdLow) & (vImage <= valueThresholdHigh);
-% 
-% % Combine the masks to find where all 3 are "true."
-% % Then we will have the mask of only the right parts of the image.
-% mask = uint8(hueMask & saturationMask & valueMask);
-% 
-% % Keep areas only if they're bigger than this.
-% % Get rid of small objects.  Note: bwareaopen returns a logical.
-% mask = uint8(bwareaopen(mask, smallestAcceptableArea));
-% 
-% % Smooth the border using a morphological closing operation, imclose().
-% %structuringElement = strel('disk', 4);
-% %mask = imclose(mask, structuringElement);
 mask = gMsk;
 figure;
-imshow(g,gMsk);
+imshow(mask,[]);
 % Maximize the figure window.
 % set(gcf, 'Position', get(0, 'ScreenSize'));
 
@@ -135,11 +105,11 @@ imagesc(sateMask);
 % Set axis labels
 xstep = diff(curLatLonAxis(1:2))/10;
 xticklabels = curLatLonAxis(1):xstep:curLatLonAxis(2);
-xticks = linspace(1, size(g, 2), numel(xticklabels));
+xticks = linspace(1, size(mask, 2), numel(xticklabels));
 set(gca, 'XTick', xticks, 'XTickLabel', xticklabels);
 ystep = diff(curLatLonAxis(3:4))/10;
 yticklabels = curLatLonAxis(3):ystep:curLatLonAxis(4);
-yticks = linspace(1, size(g, 1), numel(yticklabels));
+yticks = linspace(1, size(mask, 1), numel(yticklabels));
 set(gca, 'YTick', yticks, 'YTickLabel', flipud(yticklabels(:)));
 % Add grid over the image.
 hold on
