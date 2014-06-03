@@ -108,6 +108,7 @@ end
 
 % Satellite image zoomlevel is 20, check zoomlevel
 if (params.zoom>20)
+    print('zoom level is greater than 20.');
     params.zoom=20;
 end
 

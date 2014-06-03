@@ -221,8 +221,8 @@ end
 % g
 function mask = grayMask(terImage)
 mask = rgb2gray(terImage);
-mask(mask<173|mask>175) = 0;
-mask(mask>=173&mask<=175) = 1;
+mask(mask) = 0;
+mask(mask>170&mask<179) = 1;
 end
 
 
