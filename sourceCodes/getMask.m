@@ -1,4 +1,4 @@
-function [mask,sateMask,gridData] = getMask(hueLow,hueHigh,smallestAcceptableArea,varargin)
+function [mask,sateMask,gridData,zoomlevel] = getMask(hueLow,hueHigh,smallestAcceptableArea,varargin)
 % HSVMASK MASKS the requried color object.
 % Varargin CONTAINS [satImage,terImage]. SatImage is a satellite image.
 % terImage is a terrain image.
@@ -135,8 +135,9 @@ hold off
 % TODO
 % Create a grid data
 % M and N are one cell's tags. 
-% L have 5 elements. 4 are latitude and longitude values. The other one is
-% flag value (0or1) to set whether this cell has water or river areas.
+% L have 6 elements. 4 are latitude and longitude values. One is
+% flag value (0or1) to set whether this cell has water or river areas. The
+% other is zoomlevel information for this grid cell.
 m = length(xticklabels)-1;
 n = length(yticklabels)-1;
 l = 5; 
