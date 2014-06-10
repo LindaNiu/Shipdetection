@@ -12,6 +12,7 @@ function [mask,sateMask,gridData,zoomlevel] = getMask(hueLow,hueHigh,smallestAcc
 
 isApiKeyFlag = 0;%'AIzaSyCg0-ikB-TFJbNLyNrMxeUkf8bMmlWjq_c'
 if isempty(varargin) == 1
+    layer = 1;
     currentAxis = axis;
     [lon,lat,zoomlevel] = setCenterPoint(currentAxis); % setCenterPoin is an inner function.
     
@@ -23,6 +24,8 @@ elseif length(varargin) >= 1
                 [lon,lat,zoomlevel] = setCenterPoint(gridcell);
             case 'apikey'
                 isApiKeyFlag = varargin{idx+1};
+            case 'layer'
+                layer = varargin{idx+1};
             otherwise
                 error(['Unrecognized variable: ' varargin{idx}])
         end
@@ -92,22 +95,28 @@ if curLatLonAxis(4)>85
     curLatLonAxis(4)=85;
 end
 
-%Current Ratio
-%curAxis = axis
-%xratio = diff(curLatLonAxis(1:2))/diff(curAxis(1:2));
-%yratio = diff(curLatLonAxis(3:4))/diff(curAxis(3:4));
-%curGeo= [xratio yratio];
+
 
 % Scale data and display image object 
 figure;
 %imshow(sateMask);
 imagesc(sateMask);
 % Set axis labels
-xstep = diff(curLatLonAxis(1:2))/10;
+if layer==1||layer == 2
+    gridlevel = 10;
+elseif layer == 3 
+    gridlevel = 8;
+else 
+    % TODO
+end
+
+xstep = diff(curLatLonAxis(1:2))/gridlevel;
+ystep = diff(curLatLonAxis(3:4))/gridlevel;
+
 xticklabels = curLatLonAxis(1):xstep:curLatLonAxis(2);
 xticks = linspace(1, size(mask, 2), numel(xticklabels));
 set(gca, 'XTick', xticks, 'XTickLabel', xticklabels);
-ystep = diff(curLatLonAxis(3:4))/10;
+
 yticklabels = curLatLonAxis(3):ystep:curLatLonAxis(4);
 yticks = linspace(1, size(mask, 1), numel(yticklabels));
 set(gca, 'YTick', yticks, 'YTickLabel', flipud(yticklabels(:)));
@@ -127,7 +136,7 @@ end
 for k = 1:step:N 
     x = [k k]; 
     y = [1 M];
-   plot(x,y,'Color','w','LineStyle','-');
+    plot(x,y,'Color','w','LineStyle','-');
     plot(x,y,'Color','k','LineStyle',':');
 end
 hold off
@@ -153,9 +162,9 @@ for i = 1:m
                 case 2
                     gridData(i,j,k) = xticklabels(i+1);
                 case 3
-                    gridData(i,j,k) = yticklabels(j);
+                    gridData(i,j,k) = yticklabels(11-j);
                 case 4
-                    gridData(i,j,k) = yticklabels(j+1);
+                    gridData(i,j,k) = yticklabels(12-j);
                 case 5
                     % TODO filter the area whether has water or not.
                     gridData(i,j,k) = 0; % Default value 0 as including water area.
